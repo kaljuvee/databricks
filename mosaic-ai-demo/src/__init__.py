@@ -11,10 +11,14 @@ from .model_serving import DatabricksModelServing
 from .vector_search import DatabricksVectorSearch
 from .rag_pipeline import RAGPipeline
 from .ai_gateway import AIGateway
+from .lakeflow_pipeline import LakeflowPipeline
+from .agent_framework import AgentFramework
 
 __all__ = [
     "DatabricksModelServing",
     "DatabricksVectorSearch",
     "RAGPipeline",
-    "AIGateway"
+    "AIGateway",
+    "LakeflowPipeline",
+    "AgentFramework"
 ]

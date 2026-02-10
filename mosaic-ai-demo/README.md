@@ -1,6 +1,6 @@
 # Databricks Mosaic AI Demo
 
-A comprehensive demonstration of Databricks Mosaic AI capabilities including Model Serving, Vector Search, RAG (Retrieval-Augmented Generation), and AI Gateway features.
+A comprehensive demonstration of Databricks Mosaic AI capabilities including Model Serving, Vector Search, RAG (Retrieval-Augmented Generation), AI Gateway, Lakeflow Pipelines, and Agent Framework features.
 
 ## Features
 
@@ -10,23 +10,42 @@ This demo project illustrates the following Databricks Mosaic AI capabilities:
 - Access to state-of-the-art open models (Llama 3.3, Mixtral, DBRX)
 - External model integration (OpenAI, Anthropic, Google Gemini)
 - OpenAI-compatible API interface
+- Streaming responses and batch processing
+- Cost estimation and optimization
 
 ### 2. **Mosaic AI Gateway**
 - Rate limiting and usage tracking
 - AI Guardrails (PII masking, toxicity filters)
 - Unified governance layer for model calls
+- Compliance and security features
 
 ### 3. **Vector Search**
 - Serverless vector database
 - Automatic synchronization with Delta Tables
 - Real-time index updates
+- Similarity search and filtering
 
 ### 4. **RAG (Retrieval-Augmented Generation)**
 - Document chunking and embedding pipelines
 - Integration with Delta Lake
-- Agent Framework for tracing and debugging
+- Context retrieval and answer generation
+- Source citation and traceability
 
-### 5. **AI Playground**
+### 5. **Lakeflow Spark Declarative Pipelines**
+- Automated document processing (chunking and embedding)
+- Delta Live Tables (DLT) for declarative transformations
+- Medallion architecture (Bronze → Silver → Gold)
+- Data quality expectations and monitoring
+- Automatic sync with Vector Search indexes
+
+### 6. **Mosaic AI Agent Framework**
+- Agent configuration and deployment
+- End-to-end tracing with MLflow
+- Performance monitoring and analysis
+- Quality indicators and recommendations
+- Production deployment patterns
+
+### 7. **AI Playground**
 - Browser-based chat interface
 - Side-by-side model comparison
 
@@ -39,11 +58,11 @@ mosaic-ai-demo/
 │   ├── vector_search.py          # Vector Search implementation
 │   ├── rag_pipeline.py           # RAG application logic
 │   ├── ai_gateway.py             # AI Gateway with guardrails
+│   ├── lakeflow_pipeline.py      # Lakeflow DLT pipeline examples
+│   ├── agent_framework.py        # Agent Framework with MLflow tracing
 │   └── utils.py                  # Helper functions
 ├── notebooks/
-│   ├── 01_model_serving_demo.ipynb
-│   ├── 02_vector_search_demo.ipynb
-│   └── 03_rag_end_to_end.ipynb
+│   └── (Jupyter notebooks for interactive demos)
 ├── data/
 │   └── sample_documents/         # Sample documents for RAG
 ├── docs/
@@ -79,11 +98,15 @@ cp .env.sample .env
 Edit `.env` with your Databricks credentials:
 - `DATABRICKS_HOST`: Your workspace URL
 - `DATABRICKS_TOKEN`: Your Personal Access Token
-- Other optional configurations
 
 ### 3. Install Dependencies
 
 ```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
@@ -98,6 +121,15 @@ python src/vector_search.py
 
 # Run RAG Pipeline
 python src/rag_pipeline.py
+
+# Test AI Gateway
+python src/ai_gateway.py
+
+# Explore Lakeflow Pipelines
+python src/lakeflow_pipeline.py
+
+# Try Agent Framework
+python src/agent_framework.py
 ```
 
 ## Configuration
@@ -137,6 +169,8 @@ Your workspace URL follows this format:
 - [Model Serving Guide](https://docs.databricks.com/en/machine-learning/model-serving/index.html)
 - [Vector Search Guide](https://docs.databricks.com/en/generative-ai/vector-search.html)
 - [RAG Tutorial](https://docs.databricks.com/en/generative-ai/tutorials/ai-cookbook/index.html)
+- [Lakeflow Documentation](https://docs.databricks.com/en/delta-live-tables/index.html)
+- [Agent Framework Guide](https://docs.databricks.com/en/generative-ai/agent-framework/index.html)
 
 ## Examples Included
 
@@ -144,23 +178,42 @@ Your workspace URL follows this format:
 - Connect to Foundation Model APIs
 - Query different models (Llama, Mixtral, DBRX)
 - Compare responses from multiple models
+- Streaming responses
+- Cost estimation
 
 ### 2. Vector Search (`src/vector_search.py`)
 - Create and manage vector search indexes
 - Embed documents and perform similarity search
 - Sync with Delta Tables
+- Query with filters
 
 ### 3. RAG Pipeline (`src/rag_pipeline.py`)
 - Load and chunk documents
 - Create embeddings and store in vector database
 - Retrieve relevant context and generate answers
-- Trace execution with MLflow
+- Batch query processing
+- Source citation
 
 ### 4. AI Gateway (`src/ai_gateway.py`)
 - Configure rate limiting
 - Apply PII masking
 - Filter toxic content
 - Track usage metrics
+- Generate compliance reports
+
+### 5. Lakeflow Pipeline (`src/lakeflow_pipeline.py`)
+- Generate Delta Live Tables pipeline configuration
+- Automated document chunking and embedding
+- Medallion architecture (Bronze → Silver → Gold)
+- Data quality expectations
+- Integration with Vector Search
+
+### 6. Agent Framework (`src/agent_framework.py`)
+- Create agent configurations
+- Trace retrieval and generation steps
+- End-to-end pipeline tracing
+- Performance analysis and recommendations
+- MLflow integration for experiment tracking
 
 ## Troubleshooting
 
@@ -175,6 +228,29 @@ Your workspace URL follows this format:
 ### Vector Search Errors
 - Verify Vector Search is enabled in your workspace
 - Check Delta Table permissions
+
+### Lakeflow Pipeline Errors
+- Ensure Delta Live Tables is enabled
+- Check that source tables exist
+- Verify pipeline configuration
+
+## Advanced Setup
+
+### Setting Up Lakeflow Pipelines
+
+1. **Create Source Table**: Run the SQL from `lakeflow_pipeline.py` to create sample documents
+2. **Create DLT Pipeline**: Upload the generated notebook to Databricks
+3. **Configure Pipeline**: Use the generated configuration
+4. **Start Pipeline**: Monitor execution in the DLT UI
+5. **Create Vector Index**: Point to the output table with automatic sync
+
+### Deploying Agents with MLflow
+
+1. **Run Agent**: Execute `agent_framework.py` to generate traces
+2. **Log to MLflow**: Use the generated MLflow code
+3. **Analyze Performance**: Review metrics in MLflow UI
+4. **Register Model**: Register the agent in Model Registry
+5. **Deploy**: Deploy as a Model Serving endpoint
 
 ## Contributing
 
@@ -193,4 +269,12 @@ For issues and questions:
 
 ## Acknowledgments
 
-Built with Databricks Mosaic AI platform, showcasing the power of unified AI development on the lakehouse.
+Built with Databricks Mosaic AI platform, showcasing the power of unified AI development on the lakehouse architecture. This demo covers all major RAG components:
+
+- **Foundation Model APIs** for generation
+- **Vector Search** for retrieval
+- **Lakeflow Pipelines** for automated data processing
+- **Agent Framework** for tracing and optimization
+- **AI Gateway** for governance and compliance
+
+Start building production-ready generative AI applications today! 🚀

@@ -446,3 +446,336 @@ Contributions are welcome! Please:
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
+
+
+---
+
+## Lakeflow Pipelines
+
+### Overview
+
+Lakeflow (Delta Live Tables) provides declarative data pipelines for automated document processing. It's essential for production RAG applications that need to process and update large document collections.
+
+### Key Features
+
+- **Declarative Transformations**: Define what you want, not how to get it
+- **Medallion Architecture**: Bronze → Silver → Gold data layers
+- **Data Quality**: Built-in expectations and constraints
+- **Auto-Sync**: Automatic synchronization with Vector Search
+- **Monitoring**: Pipeline metrics and observability
+
+### Setting Up a Lakeflow Pipeline
+
+#### Step 1: Create Source Documents Table
+
+```sql
+CREATE TABLE main.default.raw_documents (
+  id STRING,
+  text STRING,
+  source STRING,
+  metadata MAP<STRING, STRING>
+);
+```
+
+#### Step 2: Generate Pipeline Configuration
+
+```bash
+python src/lakeflow_pipeline.py
+```
+
+This generates:
+- DLT pipeline configuration JSON
+- DLT notebook code for transformations
+- Sample SQL for creating source tables
+
+#### Step 3: Create DLT Pipeline in Databricks
+
+1. Go to **Workflows** → **Delta Live Tables**
+2. Click **Create Pipeline**
+3. Upload the generated notebook (`lakeflow_dlt_notebook.py`)
+4. Configure with the generated JSON settings
+5. Click **Create**
+
+#### Step 4: Start the Pipeline
+
+1. Click **Start** in the DLT UI
+2. Monitor execution in the graph view
+3. Check data quality metrics
+4. Verify output tables
+
+#### Step 5: Connect to Vector Search
+
+```python
+from databricks.vector_search.client import VectorSearchClient
+
+client = VectorSearchClient()
+
+# Create index that syncs with DLT output
+client.create_delta_sync_index(
+    endpoint_name="my_endpoint",
+    index_name="main.default.embedded_chunks_index",
+    source_table_name="main.default.embedded_chunks",  # DLT output
+    pipeline_type="TRIGGERED",
+    primary_key="id",
+    embedding_source_column="text",
+    embedding_model_endpoint_name="databricks-bge-large-en"
+)
+```
+
+### Pipeline Architecture
+
+```
+┌─────────────────┐
+│ Raw Documents   │  Bronze Layer
+│ (Source Table)  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Chunked Docs    │  Silver Layer
+│ (Chunking UDF)  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Embedded Chunks │  Gold Layer
+│ (Vector Ready)  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Vector Search   │  Consumption
+│ Index (Auto)    │
+└─────────────────┘
+```
+
+### Best Practices
+
+1. **Use Medallion Architecture**: Separate Bronze, Silver, and Gold layers
+2. **Add Data Quality Checks**: Use `@dlt.expect` decorators
+3. **Enable CDC**: Turn on Change Data Feed for Gold tables
+4. **Monitor Pipeline**: Create metrics tables for observability
+5. **Incremental Processing**: Use streaming for large datasets
+
+---
+
+## Agent Framework
+
+### Overview
+
+The Mosaic AI Agent Framework provides tools for building, deploying, and monitoring RAG agents with comprehensive tracing and MLflow integration.
+
+### Key Features
+
+- **Agent Configuration**: Define retriever and generator settings
+- **End-to-End Tracing**: Track every step of the RAG pipeline
+- **MLflow Integration**: Experiment tracking and model registry
+- **Performance Analysis**: Identify bottlenecks and optimization opportunities
+- **Production Deployment**: Deploy as Model Serving endpoints
+
+### Using the Agent Framework
+
+#### Step 1: Create Agent Configuration
+
+```python
+from src.agent_framework import AgentFramework
+
+framework = AgentFramework()
+
+config = framework.create_agent_config(
+    agent_name="my_rag_agent",
+    vector_index="main.default.docs_index",
+    llm_model="databricks-llama-3-1-8b-instruct",
+    num_context_chunks=3
+)
+```
+
+#### Step 2: Trace Agent Execution
+
+```python
+# Trace retrieval
+retrieval_trace = framework.trace_retrieval(
+    query="What is Databricks?",
+    retrieved_chunks=chunks,
+    retrieval_time_ms=150.5
+)
+
+# Trace generation
+generation_trace = framework.trace_generation(
+    query="What is Databricks?",
+    context=context_text,
+    generated_answer=answer,
+    generation_time_ms=425.3,
+    token_count={"prompt_tokens": 350, "completion_tokens": 120, "total_tokens": 470}
+)
+
+# Create end-to-end trace
+e2e_trace = framework.trace_end_to_end(
+    query="What is Databricks?",
+    retrieval_trace=retrieval_trace,
+    generation_trace=generation_trace,
+    final_answer=answer,
+    total_time_ms=575.8
+)
+```
+
+#### Step 3: Analyze Performance
+
+```python
+# Analyze all traces
+analysis = framework.analyze_traces()
+
+print(f"Average latency: {analysis['summary']['avg_total_time_ms']}ms")
+print(f"Average retrieval score: {analysis['summary']['avg_retrieval_score']}")
+print(f"Recommendations: {analysis['recommendations']}")
+```
+
+#### Step 4: Log to MLflow
+
+```python
+import mlflow
+
+mlflow.set_experiment("/Users/your_email/rag-experiments")
+
+with mlflow.start_run(run_name="my_rag_agent"):
+    # Log parameters
+    mlflow.log_param("vector_index", config["retriever"]["index_name"])
+    mlflow.log_param("llm_model", config["generator"]["model"])
+    
+    # Log metrics
+    mlflow.log_metric("avg_latency_ms", analysis["summary"]["avg_total_time_ms"])
+    mlflow.log_metric("avg_retrieval_score", analysis["summary"]["avg_retrieval_score"])
+    
+    # Log configuration
+    mlflow.log_dict(config, "agent_config.json")
+    
+    # Log traces
+    mlflow.log_dict(e2e_trace, "sample_trace.json")
+```
+
+#### Step 5: Deploy Agent
+
+Once you've optimized your agent:
+
+1. Register the agent configuration in MLflow Model Registry
+2. Create a Model Serving endpoint
+3. Deploy with auto-scaling enabled
+4. Monitor production metrics
+
+### Tracing Architecture
+
+```
+┌──────────────┐
+│ User Query   │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────────────┐
+│ Retrieval Step       │ ← Trace: chunks, scores, latency
+│ (Vector Search)      │
+└──────┬───────────────┘
+       │
+       ▼
+┌──────────────────────┐
+│ Generation Step      │ ← Trace: tokens, latency, model
+│ (Foundation Model)   │
+└──────┬───────────────┘
+       │
+       ▼
+┌──────────────────────┐
+│ Final Answer         │ ← Trace: quality indicators
+└──────────────────────┘
+       │
+       ▼
+┌──────────────────────┐
+│ MLflow Logging       │ ← Store: metrics, artifacts
+└──────────────────────┘
+```
+
+### What to Trace
+
+1. **Retrieval Metrics**:
+   - Number of chunks retrieved
+   - Similarity scores
+   - Retrieval latency
+   - Source documents
+
+2. **Generation Metrics**:
+   - Token counts (prompt, completion, total)
+   - Generation latency
+   - Model used
+   - Temperature and other parameters
+
+3. **Quality Indicators**:
+   - Average retrieval score
+   - Answer length
+   - Context relevance
+   - Overall latency category
+
+4. **Issues and Anomalies**:
+   - Slow queries
+   - Low-quality retrievals
+   - High token usage
+   - Failed requests
+
+### Best Practices
+
+1. **Trace Everything**: Log all inputs, outputs, and intermediate steps
+2. **Use MLflow**: Track experiments systematically
+3. **Monitor Production**: Set up alerts for degraded performance
+4. **Analyze Regularly**: Review traces to identify optimization opportunities
+5. **Version Control**: Version agent configurations and track changes
+6. **A/B Testing**: Compare different configurations in production
+7. **Feedback Loops**: Incorporate user feedback into traces
+
+---
+
+## Complete RAG Stack
+
+This demo now covers all components of a production RAG system:
+
+| Component | Purpose | Demo Module |
+|-----------|---------|-------------|
+| **Foundation Models** | Text generation | `model_serving.py` |
+| **Vector Search** | Similarity search | `vector_search.py` |
+| **Lakeflow Pipelines** | Document processing | `lakeflow_pipeline.py` |
+| **Agent Framework** | Tracing & optimization | `agent_framework.py` |
+| **AI Gateway** | Governance & security | `ai_gateway.py` |
+| **RAG Pipeline** | End-to-end integration | `rag_pipeline.py` |
+
+### Recommended Implementation Order
+
+1. **Start with Model Serving**: Test Foundation Model APIs
+2. **Set up Vector Search**: Create indexes and test retrieval
+3. **Build Basic RAG**: Combine retrieval and generation
+4. **Add Lakeflow**: Automate document processing
+5. **Implement Tracing**: Use Agent Framework for monitoring
+6. **Add Governance**: Enable AI Gateway features
+7. **Deploy to Production**: Use Model Serving endpoints
+
+---
+
+## Additional Resources
+
+### Databricks Documentation
+
+- [Mosaic AI Overview](https://docs.databricks.com/en/generative-ai/generative-ai.html)
+- [Lakeflow (Delta Live Tables)](https://docs.databricks.com/en/delta-live-tables/index.html)
+- [Agent Framework](https://docs.databricks.com/en/generative-ai/agent-framework/index.html)
+- [MLflow Tracking](https://docs.databricks.com/en/mlflow/tracking.html)
+
+### Tutorials
+
+- [Build a RAG Application](https://docs.databricks.com/en/generative-ai/tutorials/ai-cookbook/index.html)
+- [Delta Live Tables Tutorial](https://docs.databricks.com/en/delta-live-tables/tutorial.html)
+- [Agent Development Guide](https://docs.databricks.com/en/generative-ai/agent-framework/create-agent.html)
+
+### Community
+
+- [Databricks Community Edition](https://community.cloud.databricks.com/)
+- [Databricks Community Forums](https://community.databricks.com/)
+- [GitHub Examples](https://github.com/databricks)
+
+---
+
+**Ready to build production RAG applications?** You now have all the tools and examples you need! 🚀
