@@ -12,6 +12,13 @@ numpy>=1.24.0                    # Numerical computing
 # Optional: Databricks SDK (for advanced features)
 databricks-sdk>=0.12.0           # Official Databricks SDK
 
+# Web interface
+streamlit>=1.28.0                # Web application framework
+
+# TUI interface
+rich>=13.0.0                     # Rich text and formatting for terminal
+prompt-toolkit>=3.0.0            # Interactive command-line interface
+
 # Optional: MLflow (for experiment tracking)
 mlflow>=2.8.0                    # ML experiment tracking and model registry
 

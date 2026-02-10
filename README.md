@@ -19,14 +19,31 @@ A complete demonstration of **Databricks Mosaic AI** capabilities, including Fou
 - 🔬 **Agent Framework** - MLflow-based tracing and debugging
 
 **Quick Start**:
+
+**Option 1: Web Interface (Streamlit)**
 ```bash
 cd mosaic-ai-demo
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.sample .env
-# Edit .env with your DATABRICKS_HOST and DATABRICKS_TOKEN
+# Edit .env with your credentials
+streamlit run Home.py
+```
+Open browser to `http://localhost:8501`
+
+**Option 2: TUI (Terminal Interface)**
+```bash
+cd mosaic-ai-demo
+cp .env.sample .env
+# Edit .env with your credentials
+./mosaic-ai.sh
+```
+Interactive bash-style commands: `query`, `rag`, `compare`, `trace`
+
+**Option 3: Python Scripts**
+```bash
+cd mosaic-ai-demo
 python src/model_serving.py
+python src/rag_pipeline.py
 ```
 
 **What You Need**:

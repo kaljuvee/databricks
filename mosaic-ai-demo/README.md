@@ -80,7 +80,60 @@ mosaic-ai-demo/
 
 ## Quick Start
 
-### 1. Clone the Repository
+### Choose Your Interface
+
+This demo provides **three ways** to interact with Databricks Mosaic AI:
+
+#### 🌐 Option 1: Web Interface (Streamlit)
+
+Interactive web application with visual interface:
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.sample .env
+# Edit .env with your DATABRICKS_HOST and DATABRICKS_TOKEN
+
+# Launch web app
+streamlit run Home.py
+```
+
+Open your browser to **http://localhost:8501** to access:
+- 🤖 Foundation Model APIs - Query and compare models
+- 📚 RAG Pipeline - Interactive Q&A with context
+- 🔬 Agent Framework - Tracing and monitoring
+- And more features with visual feedback!
+
+#### 💻 Option 2: TUI (Text User Interface)
+
+Bash-style interactive terminal interface:
+
+```bash
+# Configure environment
+cp .env.sample .env
+# Edit .env with your credentials
+
+# Launch TUI
+./mosaic-ai.sh
+```
+
+**Available Commands:**
+- `query <text>` - Query foundation models
+- `rag <question>` - Ask questions using RAG
+- `compare <text>` - Compare multiple models
+- `trace` - Create and analyze agent traces
+- `model <name>` - Switch models (llama8b, llama70b, mixtral)
+- `samples` - View sample queries
+- `help` - Show all commands
+- `menu` - Show interactive menu
+
+#### 🐍 Option 3: Python Scripts
+
+Run individual components directly:
+
+### 1. Clone the Repository (for all options)
 
 ```bash
 git clone https://github.com/kaljuvee/databricks.git
